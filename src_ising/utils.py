@@ -9,6 +9,7 @@ from args import args
 if args.dtype == 'float32':
     default_dtype = np.float32
     default_dtype_torch = torch.float32
+
 elif args.dtype == 'float64':
     default_dtype = np.float64
     default_dtype_torch = torch.float64
@@ -43,26 +44,34 @@ def get_ham_args_features():
         features = 'nd{net_depth}_nw{net_width}_made'
     elif args.net == 'bernoulli':
         features = 'bernoulli_nw{net_width}'
+
     else:
         features = 'nd{net_depth}_nw{net_width}_hks{half_kernel_size}'
 
     if args.bias:
         features += '_bias'
+
     if args.z2:
         features += '_z2'
+
     if args.res_block:
         features += '_res'
+
     if args.x_hat_clip:
         features += '_xhc{x_hat_clip:g}'
+
     if args.final_conv:
         features += '_fconv'
 
     if args.optimizer != 'adam':
         features += '_{optimizer}'
+
     if args.lr_schedule:
         features += '_lrs'
+
     if args.beta_anneal:
         features += '_ba{beta_anneal:g}'
+
     if args.clip_grad:
         features += '_cg{clip_grad:g}'
 

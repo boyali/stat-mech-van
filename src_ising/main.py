@@ -27,6 +27,7 @@ from utils import (
 )
 
 
+
 def main():
     start_time = time.time()
 
@@ -34,6 +35,7 @@ def main():
     if args.clear_checkpoint:
         clear_checkpoint()
     last_step = get_last_checkpoint_step()
+
     if last_step >= 0:
         my_log('\nCheckpoint found: {}\n'.format(last_step))
     else:
@@ -42,12 +44,16 @@ def main():
 
     if args.net == 'made':
         net = MADE(**vars(args))
+
     elif args.net == 'pixelcnn':
         net = PixelCNN(**vars(args))
+
     elif args.net == 'bernoulli':
         net = BernoulliMixture(**vars(args))
+
     else:
         raise ValueError('Unknown net: {}'.format(args.net))
+
     net.to(args.device)
     my_log('{}\n'.format(net))
 
@@ -59,12 +65,16 @@ def main():
 
     if args.optimizer == 'sgd':
         optimizer = torch.optim.SGD(params, lr=args.lr)
+
     elif args.optimizer == 'sgdm':
         optimizer = torch.optim.SGD(params, lr=args.lr, momentum=0.9)
+
     elif args.optimizer == 'rmsprop':
         optimizer = torch.optim.RMSprop(params, lr=args.lr, alpha=0.99)
+
     elif args.optimizer == 'adam':
         optimizer = torch.optim.Adam(params, lr=args.lr, betas=(0.9, 0.999))
+
     elif args.optimizer == 'adam0.5':
         optimizer = torch.optim.Adam(params, lr=args.lr, betas=(0.5, 0.999))
     else:
@@ -80,8 +90,10 @@ def main():
                                                      last_step))
         ignore_param(state['net'], net)
         net.load_state_dict(state['net'])
+
         if state.get('optimizer'):
             optimizer.load_state_dict(state['optimizer'])
+
         if args.lr_schedule and state.get('scheduler'):
             scheduler.load_state_dict(state['scheduler'])
 
@@ -92,6 +104,7 @@ def main():
     sample_time = 0
     train_time = 0
     start_time = time.time()
+
     for step in range(last_step + 1, args.max_step + 1):
         optimizer.zero_grad()
 
@@ -107,6 +120,7 @@ def main():
         log_prob = net.log_prob(sample)
         # 0.998**9000 ~ 1e-8
         beta = args.beta * (1 - args.beta_anneal**step)
+
         with torch.no_grad():
             energy = ising.energy(sample, args.ham, args.lattice,
                                   args.boundary)
@@ -134,10 +148,12 @@ def main():
             mag = sample.mean(dim=0)
             mag_mean = mag.mean()
             mag_sqr_mean = (mag**2).mean()
+
             if step > 0:
                 sample_time /= args.print_step
                 train_time /= args.print_step
             used_time = time.time() - start_time
+
             my_log(
                 'step = {}, F = {:.8g}, F_std = {:.8g}, S = {:.8g}, E = {:.8g}, M = {:.8g}, Q = {:.8g}, lr = {:.3g}, beta = {:.8g}, sample_time = {:.3f}, train_time = {:.3f}, used_time = {:.3f}'
                 .format(
@@ -154,6 +170,7 @@ def main():
                     train_time,
                     used_time,
                 ))
+
             sample_time = 0
             train_time = 0
 
@@ -165,6 +182,7 @@ def main():
                     'energy': energy,
                     'loss': loss,
                 }
+
                 torch.save(state, '{}_save/{}.sample'.format(
                     args.out_filename, step))
 
